@@ -1,0 +1,42 @@
+# Birdmoji by Birdflop - https://birdflop.com/resources#birdmoji
+#
+# Birdmoji builds a resource pack from your Discord server's emojis and keeps it
+# up to date as emojis are added, removed or renamed. Emojis sent from Discord
+# show as sprites in Minecraft chat, and players can type :emoji: in chat too.
+
+# The Discord server to get emojis from. Leave empty to use DiscordSRV's main server.
+guild-id: ""
+
+# The atlas and sprite prefix emojis are added as. Emojis can also be used anywhere
+# MiniMessage is supported with <sprite:"minecraft:gui":"birdflop:gif/name">
+# The atlas has to be one built into Minecraft, like minecraft:gui or minecraft:blocks,
+# resource packs can't add new atlases.
+atlas: "minecraft:gui"
+sprite-prefix: "birdflop:gif/"
+
+# Resolution of each emoji in pixels. Chat is 8px tall at GUI scale 1, so 32 is sharp
+# at every GUI scale. Higher values make the resource pack bigger.
+size: 32
+
+# Animated emojis with more frames than this have frames dropped evenly
+max-frames: 256
+
+# Show the emoji's :name: when hovering over it in chat
+hover-name: true
+
+resource-pack:
+  # Host the pack and send it to players when they join. This is sent alongside
+  # your server's own resource pack, it doesn't replace it.
+  # If disabled, merge plugins/Birdmoji/Birdmoji.zip into your own resource pack.
+  enabled: true
+  # The port to host the pack on. This needs to be open to players, on most hosts
+  # that means adding another port (allocation) to your server.
+  # Changing this needs a /birdmoji reload.
+  port: 8164
+  # The address players download the pack from, e.g. "http://play.example.com:8164".
+  # Leave empty to use this server's public IP and the port above.
+  public-url: ""
+  # Kick players who decline the pack
+  required: false
+  # Message shown on the download prompt, in MiniMessage format. Empty for none.
+  prompt: "<gray>This server uses a resource pack to show Discord emojis in chat."

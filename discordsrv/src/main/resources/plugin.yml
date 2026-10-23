@@ -1,0 +1,25 @@
+name: Birdmoji
+version: ${version}
+main: com.birdflop.birdmoji.discordsrv.BirdmojiDiscordSrv
+description: Discord custom emojis as sprites in Minecraft chat, with an automatic resource pack. For DiscordSRV.
+author: Birdflop
+website: https://birdflop.com/resources#birdmoji
+api-version: "1.21"
+depend: [DiscordSRV]
+commands:
+  birdmoji:
+    description: Reload Birdmoji and rebuild the emoji resource pack
+    usage: /birdmoji reload
+    permission: birdmoji.reload
+  emojis:
+    description: List the emojis, click one to put it in chat
+    usage: /emojis [page]
+    aliases: [emoji, emotes]
+    permission: birdmoji.list
+permissions:
+  birdmoji.list:
+    description: Allows /emojis
+    default: true
+  birdmoji.reload:
+    description: Allows /birdmoji reload
+    default: op
