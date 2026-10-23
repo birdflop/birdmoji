@@ -1,3 +1,4 @@
+![packpng](https://github.com/birdflop/birdmoji/blob/main/common/src/main/resources/pack.png?raw=true)
 # Birdmoji
 
 An addon for [DiscordSRV](https://github.com/DiscordSRV/DiscordSRV) and [DiscordSRV Ascension](https://github.com/DiscordSRV/Ascension) by [Birdflop](https://birdflop.com) that brings your Discord server's custom emojis into Minecraft chat as sprites.
