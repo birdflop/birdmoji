@@ -2,6 +2,7 @@ package com.birdflop.birdmoji;
 
 import net.kyori.adventure.key.Key;
 import net.kyori.adventure.text.Component;
+import net.kyori.adventure.text.format.NamedTextColor;
 import net.kyori.adventure.text.object.ObjectContents;
 import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
@@ -47,6 +48,7 @@ public abstract class Birdmoji extends JavaPlugin {
         packBuilder = new PackBuilder(getLogger());
         buildExecutor = Executors.newSingleThreadExecutor(runnable -> new Thread(runnable, "Birdmoji Pack Builder"));
         packServer.start(settings);
+        updateCompletions();
 
         getServer().getPluginManager().registerEvents(packServer, this);
         getServer().getPluginManager().registerEvents(new ChatListener(this), this);
@@ -103,6 +105,8 @@ public abstract class Birdmoji extends JavaPlugin {
 
     /**
      * Discord names are case-sensitive but texture names have to be lowercase, so duplicates get a suffix.
+     * If a Discord emoji shares its name with a Unicode emoji shortcode, it gets a ~1 alias so the shortcode
+     * still resolves to the real Unicode emoji when typed in Minecraft chat.
      */
     private static List<Emoji> toEmojis(List<DiscordHook.DiscordEmoji> discordEmojis) {
         List<Emoji> emojis = new ArrayList<>();
@@ -114,14 +118,17 @@ public abstract class Birdmoji extends JavaPlugin {
                     String base = emoji.name().toLowerCase(Locale.ROOT);
                     String texture = base;
                     for (int i = 1; !textures.add(texture); i++) texture = base + "-" + i;
-                    emojis.add(new Emoji(emoji.name(), emoji.id(), emoji.animated(), texture));
+                    String alias = UnicodeEmojis.find(base) != null ? emoji.name() + "~1" : emoji.name();
+                    emojis.add(new Emoji(emoji.name(), emoji.id(), emoji.animated(), texture, alias));
                 });
         return emojis;
     }
 
     private void updateCompletions() {
         List<String> previous = completions;
-        completions = registry.all().stream().map(emoji -> ":" + emoji.name() + ":").toList();
+        List<String> next = new ArrayList<>(registry.all().stream().map(emoji -> ":" + emoji.alias() + ":").toList());
+        if (settings.unicodeShortcodes()) UnicodeEmojis.shortcodes().forEach(shortcode -> next.add(":" + shortcode + ":"));
+        completions = List.copyOf(next);
         for (Player player : Bukkit.getOnlinePlayers()) {
             player.removeCustomChatCompletions(previous);
             player.addCustomChatCompletions(completions);
@@ -146,10 +153,11 @@ public abstract class Birdmoji extends JavaPlugin {
     }
 
     /**
-     * The emoji as a sprite, using Paper's Adventure
+     * The emoji as a sprite, using Paper's Adventure. White by default so chat colors don't tint it.
      */
     public Component sprite(Emoji emoji) {
-        return Component.object(ObjectContents.sprite(Key.key(settings.atlas()), Key.key(settings.sprite(emoji))));
+        Component sprite = Component.object(ObjectContents.sprite(Key.key(settings.atlas()), Key.key(settings.sprite(emoji))));
+        return settings.preventTint() ? sprite.color(NamedTextColor.WHITE) : sprite;
     }
 
     /**

@@ -16,6 +16,8 @@ Birdmoji comes as two plugins. Install the one for your DiscordSRV:
 - The pack is hosted by the plugin and sent to players when they join. It is sent alongside your server's own resource pack instead of replacing it.
 - Players who haven't loaded the pack see `:emoji:` instead of a missing texture.
 - Emojis sent with FakeNitro (sent as a link like `[emoji](https://cdn.discordapp.com/emojis/...)`) show as sprites too. Emojis from other Discord servers aren't in the pack, so they show as `:emoji:` instead of a link.
+- Players can also type standard Unicode emoji shortcodes, like `:smile:` or `:+1:`, the same way Discord itself resolves them. These turn into the real Unicode emoji character rather than a sprite, so they reach Discord as an actual emoji. Minecraft doesn't render most Unicode emojis on its own; pair this with a font resource pack like [Twemoji Visibility](https://modrinth.com/resourcepack/twemoji-visibility) if you want them to show as proper glyphs instead of your client's fallback. Disable with `unicode-shortcodes: false` in `config.yml`.
+  - If a Discord emoji has the same name as a Unicode shortcode (e.g. a custom `:fire:`), the Unicode emoji wins for `:fire:` and the Discord emoji is typed as `:fire~1:` instead.
 
 ## Requirements
 
@@ -43,6 +45,8 @@ Emojis can also be used anywhere MiniMessage is supported:
 ```
 
 Texture names are the emoji name in lowercase. If two emojis only differ by capitalization, the newer one gets `-1` appended.
+
+Emojis are forced to white by default so a colored message or name doesn't tint them. Set `prevent-tint: false` in `config.yml` to let them pick up the surrounding color instead.
 
 ## Commands
 

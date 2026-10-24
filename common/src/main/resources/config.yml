@@ -24,6 +24,18 @@ max-frames: 256
 # Show the emoji's :name: when hovering over it in chat
 hover-name: true
 
+# Let players type standard Unicode emoji shortcodes like :smile: or :+1: in chat.
+# These turn into the real Unicode emoji character (not a sprite), the same way Discord
+# itself resolves them, so they also reach Discord as a real emoji. Rendering Unicode
+# emojis nicely in Minecraft's own font is up to a separate resource pack, such as
+# https://modrinth.com/resourcepack/twemoji-visibility
+unicode-shortcodes: true
+
+# Force emojis to white so chat colors (like a player's name color, or color codes in
+# the message) don't tint them, since sprites and most fonts apply the surrounding
+# text color. Turn this off if you want emojis to pick up the message's color instead.
+prevent-tint: true
+
 resource-pack:
   # Host the pack and send it to players when they join. This is sent alongside
   # your server's own resource pack, it doesn't replace it.

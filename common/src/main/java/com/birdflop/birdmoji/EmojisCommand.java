@@ -63,7 +63,7 @@ public final class EmojisCommand implements TabExecutor {
     }
 
     private Component entry(Emoji emoji, boolean sprite) {
-        String name = ":" + emoji.name() + ":";
+        String name = ":" + emoji.alias() + ":";
         Component entry = sprite ? plugin.sprite(emoji) : Component.text(name, NamedTextColor.WHITE);
         return entry
                 .hoverEvent(HoverEvent.showText(Component.text()
