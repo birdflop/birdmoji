@@ -82,9 +82,16 @@ public final class PackServer implements Listener {
      * Called async after a pack was built. Resolves the public address and sends the pack to everyone online.
      */
     void setPack(PackBuilder.Pack pack) {
+        PackBuilder.Pack previous = this.pack;
+        boolean changed = previous == null || !previous.sha1().equals(pack.sha1());
         this.pack = pack;
         if (http == null) return;
-        if (baseUrl == null) baseUrl = resolveBaseUrl();
+        if (baseUrl == null) {
+            baseUrl = resolveBaseUrl();
+            changed = true;
+        }
+        // Players online already have this exact pack
+        if (!changed) return;
         loaded.clear();
         Bukkit.getOnlinePlayers().forEach(this::send);
     }

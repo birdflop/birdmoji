@@ -16,15 +16,20 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Files;
+import java.nio.file.Path;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.time.Duration;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.HexFormat;
 import java.util.List;
+import java.util.Set;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import java.util.zip.ZipEntry;
+import java.util.zip.ZipFile;
 import java.util.zip.ZipOutputStream;
 
 /**
@@ -34,6 +39,8 @@ final class PackBuilder {
 
     /** Sprite text components were added in 1.21.9, resource pack format 69 */
     private static final int MIN_FORMAT = 69;
+    /** Bump when the way textures are rendered changes, so packs cached by older versions get rebuilt */
+    private static final int CACHE_VERSION = 1;
 
     record Pack(byte[] zip, String sha1, List<Emoji> emojis) {}
 
@@ -47,11 +54,61 @@ final class PackBuilder {
         this.logger = logger;
     }
 
+    /**
+     * Hash of everything that affects the pack's contents. Emoji images never change for an id,
+     * so the same emojis with the same settings always produce the same pack.
+     */
+    static String fingerprint(List<Emoji> emojis, Settings settings) {
+        StringBuilder key = new StringBuilder()
+                .append(CACHE_VERSION).append('|').append(MIN_FORMAT)
+                .append('|').append(settings.atlas())
+                .append('|').append(settings.spriteNamespace()).append(':').append(settings.spritePath())
+                .append('|').append(settings.size())
+                .append('|').append(settings.maxFrames());
+        for (Emoji emoji : emojis) {
+            key.append('|').append(emoji.id()).append(',').append(emoji.animated()).append(',').append(emoji.texture());
+        }
+        return sha1(key.toString().getBytes(StandardCharsets.UTF_8));
+    }
+
+    /**
+     * Reuses a pack built earlier if it has every emoji and was built with the same settings, otherwise returns null.
+     * Packs missing emojis are rebuilt so emojis that failed to download get another chance.
+     */
+    Pack load(Path file, List<Emoji> emojis, Settings settings) {
+        if (!Files.isRegularFile(file)) return null;
+        try (ZipFile zip = new ZipFile(file.toFile())) {
+            if (!fingerprint(emojis, settings).equals(zip.getComment())) return null;
+
+            Set<String> entries = new HashSet<>();
+            zip.stream().forEach(entry -> entries.add(entry.getName()));
+            String texturePath = texturePath(settings);
+            for (Emoji emoji : emojis) {
+                if (!entries.contains(texturePath + emoji.texture() + ".png")) return null;
+            }
+        } catch (IOException e) {
+            logger.fine("Could not read the cached resource pack (" + e.getMessage() + "), rebuilding it");
+            return null;
+        }
+
+        try {
+            byte[] zip = Files.readAllBytes(file);
+            return new Pack(zip, sha1(zip), List.copyOf(emojis));
+        } catch (IOException e) {
+            return null;
+        }
+    }
+
+    private static String texturePath(Settings settings) {
+        return "assets/" + settings.spriteNamespace() + "/textures/" + settings.spritePath();
+    }
+
     Pack build(List<Emoji> emojis, Settings settings) throws IOException {
         ByteArrayOutputStream bytes = new ByteArrayOutputStream();
         List<Emoji> included = new ArrayList<>();
 
         try (ZipOutputStream zip = new ZipOutputStream(bytes)) {
+            zip.setComment(fingerprint(emojis, settings));
             JsonObject pack = new JsonObject();
             pack.addProperty("description", "Birdmoji - Discord emojis by birdflop.com");
             pack.addProperty("pack_format", MIN_FORMAT);
@@ -77,7 +134,7 @@ final class PackBuilder {
             atlasJson.add("sources", sources);
             write(zip, "assets/" + atlas[0] + "/atlases/" + atlas[1] + ".json", atlasJson.toString());
 
-            String texturePath = "assets/" + settings.spriteNamespace() + "/textures/" + settings.spritePath();
+            String texturePath = texturePath(settings);
             for (Emoji emoji : emojis) {
                 try {
                     Texture texture = render(emoji, settings);

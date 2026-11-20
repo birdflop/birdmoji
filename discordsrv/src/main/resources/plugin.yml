@@ -16,9 +16,24 @@ commands:
     usage: /emojis [page]
     aliases: [emoji, emotes]
     permission: birdmoji.list
+  shrug:
+    description: Send a message with a shrug added to the end
+    usage: /shrug [message]
+    permission: birdmoji.shortcuts
+  tableflip:
+    description: Send a message with a table flip added to the end
+    usage: /tableflip [message]
+    permission: birdmoji.shortcuts
+  unflip:
+    description: Send a message with an unflipped table added to the end
+    usage: /unflip [message]
+    permission: birdmoji.shortcuts
 permissions:
   birdmoji.list:
     description: Allows /emojis
+    default: true
+  birdmoji.shortcuts:
+    description: Allows /shrug, /tableflip and /unflip
     default: true
   birdmoji.reload:
     description: Allows /birdmoji reload

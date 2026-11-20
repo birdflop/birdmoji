@@ -14,6 +14,7 @@ import org.jetbrains.annotations.NotNull;
 
 import java.io.File;
 import java.nio.file.Files;
+import java.nio.file.Path;
 import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashSet;
@@ -55,6 +56,11 @@ public abstract class Birdmoji extends JavaPlugin {
         EmojisCommand emojisCommand = new EmojisCommand(this);
         getCommand("emojis").setExecutor(emojisCommand);
         getCommand("emojis").setTabCompleter(emojisCommand);
+        ShortcutCommand shortcutCommand = new ShortcutCommand();
+        for (String shortcut : ShortcutCommand.SHORTCUTS.keySet()) {
+            getCommand(shortcut).setExecutor(shortcutCommand);
+            getCommand(shortcut).setTabCompleter(shortcutCommand);
+        }
         hook.enable();
     }
 
@@ -78,11 +84,16 @@ public abstract class Birdmoji extends JavaPlugin {
                     return;
                 }
 
-                long start = System.currentTimeMillis();
-                PackBuilder.Pack pack = packBuilder.build(toEmojis(guild.emojis()), settings);
-                Files.write(new File(getDataFolder(), "Birdmoji.zip").toPath(), pack.zip());
-                getLogger().info("Built the resource pack with " + pack.emojis().size() + " emojis from " + guild.guildName()
-                        + " in " + (System.currentTimeMillis() - start) + "ms");
+                List<Emoji> emojis = toEmojis(guild.emojis());
+                Path file = new File(getDataFolder(), "Birdmoji.zip").toPath();
+                PackBuilder.Pack pack = packBuilder.load(file, emojis, settings);
+                if (pack == null) {
+                    long start = System.currentTimeMillis();
+                    pack = packBuilder.build(emojis, settings);
+                    Files.write(file, pack.zip());
+                    getLogger().info("Built the resource pack with " + pack.emojis().size() + " emojis from " + guild.guildName()
+                            + " in " + (System.currentTimeMillis() - start) + "ms");
+                }
 
                 registry.set(pack.emojis());
                 packServer.setPack(pack);
@@ -143,7 +154,7 @@ public abstract class Birdmoji extends JavaPlugin {
         settings = Settings.load(getConfig(), getLogger());
         packServer.start(settings);
         refresh();
-        sender.sendMessage("Reloaded Birdmoji, rebuilding the emoji resource pack...");
+        sender.sendMessage("Reloaded Birdmoji, updating the emoji resource pack...");
         return true;
     }
 

@@ -51,6 +51,7 @@ Emojis are forced to white by default so a colored message or name doesn't tint 
 ## Commands
 
 - `/emojis [page]` (`birdmoji.list`, everyone by default): lists the emojis. Click one to put it in the chat box, or shift-click to insert it where you're typing. Aliases: `/emoji`, `/emotes`.
+- `/shrug`, `/tableflip`, `/unflip` `[message]` (`birdmoji.shortcuts`, everyone by default): like Discord's, sends the message to chat with `¯\_(ツ)_/¯`, `(╯°□°)╯︵ ┻━┻` or `┬─┬ノ( º _ ºノ)` added to the end.
 - `/birdmoji reload` (`birdmoji.reload`): reloads `config.yml` and rebuilds the pack.
 
 ## Limitations
